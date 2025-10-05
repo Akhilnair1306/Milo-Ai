@@ -120,7 +120,9 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
 }
-
+html {
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;

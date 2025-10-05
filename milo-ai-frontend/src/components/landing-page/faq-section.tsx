@@ -9,36 +9,42 @@ interface FAQItem {
 
 const faqData: FAQItem[] = [
   {
-    question: "What is Brillance and who is it for?",
+    question: "What is Milo AI and who is it for?",
     answer:
-      "Brillance is a comprehensive billing automation platform designed for businesses that need custom contract management. It's perfect for SaaS companies, service providers, and enterprises looking to streamline their billing processes.",
+      "Milo AI is a compassionate emotional support companion designed specifically for people living with Alzheimer’s and dementia. It helps users remember important events, conversations, and personal details to provide comfort and aid memory.",
   },
   {
-    question: "How does the custom contract billing work?",
+    question: "How does Milo AI help people with memory loss?",
     answer:
-      "Our platform automatically processes your custom contracts, calculates billing amounts based on your specific terms, and generates invoices. You can set up complex pricing structures, usage-based billing, and custom billing cycles.",
+      "Milo listens, remembers, and recalls information to offer personalized interactions. It stores memories, reminds users about important events, medicines, and helps caregivers track daily activities.",
   },
   {
-    question: "Can I integrate Brillance with my existing tools?",
+    question: "Can caregivers use Milo AI?",
     answer:
-      "Yes! Brillance integrates seamlessly with popular CRM systems, accounting software, and payment processors. We support APIs and webhooks for custom integrations with your existing workflow.",
+      "Yes — caregivers can set reminders, add diary entries, and manage a patient’s daily needs. Milo AI helps caregivers stay informed and connected to those they care for.",
   },
   {
-    question: "What kind of support do you provide?",
+    question: "How does Milo AI store memories securely?",
     answer:
-      "We offer 24/7 customer support, dedicated account managers for enterprise clients, comprehensive documentation, and onboarding assistance to help you get started quickly.",
+      "Milo AI uses enterprise-grade security measures with end-to-end encryption. Your data is stored safely so it’s private and accessible only to you and your trusted caregivers.",
   },
   {
-    question: "Is my data secure with Brillance?",
+    question: "How can I get started with Milo AI?",
     answer:
-      "Absolutely. We use enterprise-grade security measures including end-to-end encryption, SOC 2 compliance, and regular security audits. Your data is stored in secure, redundant data centers.",
+      "Simply sign up on Milo AI, set up your profile, and start interacting. Milo will begin remembering important information and offering reminders tailored to your needs.",
   },
   {
-    question: "How do I get started with Brillance?",
+    question: "What if I forget to log in?",
     answer:
-      "Getting started is simple! Sign up for our free trial, connect your existing systems, and our onboarding team will help you set up your first custom billing workflow within 24 hours.",
+      "No worries — Milo AI is designed to remember your past conversations and data so you can continue seamlessly when you log back in.",
   },
-]
+  {
+    question: "How does Milo AI help with emotional support?",
+    answer:
+      "Milo engages in friendly conversations, recalls shared memories, and provides companionship to reduce loneliness. It acts as a caring friend who remembers every important detail about you.",
+  },
+];
+
 
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
@@ -71,10 +77,10 @@ export default function FAQSection() {
             Frequently Asked Questions
           </div>
           <div className="w-full text-[#605A57] text-base font-normal leading-7 font-sans">
-            Explore your data, build your dashboard,
-            <br className="hidden md:block" />
-            bring your team together.
-          </div>
+  Milo AI — your emotional support companion for Alzheimer’s and dementia.  
+  <br className="hidden md:block" />
+  Remember together, care together.
+</div>
         </div>
 
         {/* Right Column - FAQ Items */}

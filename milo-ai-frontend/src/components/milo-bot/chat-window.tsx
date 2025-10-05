@@ -129,7 +129,7 @@ const stopRecording = () => {
         </div>
 
         <h1 className="text-balance text-2xl md:text-3xl font-medium text-center mt-4">
-          Hi, I&apos;m Milo. How can I help you?
+          Hi, I&apos;m Milo. Good to See You!!
         </h1>
 
         <div className="mt-6 w-full max-w-2xl space-y-2">

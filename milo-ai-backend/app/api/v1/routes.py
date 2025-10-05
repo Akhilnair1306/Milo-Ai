@@ -108,25 +108,39 @@ def register_caregiver(request: User.CaregiverCreate, db: Session = Depends(get_
 # ---------------- LOGIN ----------------
 @router.post("/login", response_model=User.Token)
 def login(request: User.LoginRequest, db: Session = Depends(get_db)):
+    # Try to find user or caregiver
     user = (
         db.query(UserModel.User).filter(UserModel.User.email == request.email).first()
         or db.query(UserModel.Caregiver).filter(UserModel.Caregiver.email == request.email).first()
     )
+
     if not user or not verify_password(request.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    token_data = {"sub": user.email, "role": user.role.value, "id": str(user.id)}
+    # Default: user id is their own
+    user_id_to_return = str(user.id)
+
+    # If caregiver, get linked user's id
+    if isinstance(user, UserModel.Caregiver):
+        if user.user_id:
+            user_id_to_return = str(user.user_id)
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Caregiver not linked to a user")
+
+    token_data = {"sub": user.email, "role": user.role.value, "id": user_id_to_return}
     token = auth_service.create_access_token(token_data)
+
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": {
-            "id": str(user.id),
+            "id": user_id_to_return,
             "name": user.name,
             "email": user.email,
             "role": user.role.value
         }
     }
+
 
 @router.post("/diary", response_model=schemas.DiaryEntryResponse)
 def add_entry(entry: schemas.DiaryEntryCreate, db: Session = Depends(get_db)):

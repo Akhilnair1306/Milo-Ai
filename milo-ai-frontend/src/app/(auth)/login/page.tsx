@@ -97,7 +97,7 @@ const router = useRouter();
       <div className="flex flex-col items-center justify-center p-8 bg-white">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
-            <h1 className="text-3xl font-serif mb-2">
+            <h1 className="text-3xl font-medium mb-2">
               {isSignup ? "Create Account" : "Welcome Back"}
             </h1>
             <p className="text-sm text-[rgba(55,50,47,0.7)]">
