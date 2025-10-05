@@ -15,8 +15,7 @@ An intelligent AI chatbot designed to provide compassionate support for people l
 - **Dementia-Focused Design**: Built with cognitive accessibility in mind
 ## Screenshots
 
-<img width="1322" height="931" alt="image" src="https://github.com/user-attachments/assets/b74acde2-db18-47f4-b068-d71d37c8dd70" />
-
+<img width="837" height="497" alt="image" src="https://github.com/user-attachments/assets/ec9bdbf1-62a4-4fcc-82fc-86ef7e9d0a1a" />
 
 
 <img width="1394" height="833" alt="Screenshot1" src="https://github.com/user-attachments/assets/bd7afda4-ac7c-450c-afe7-6efa2ae3aeff" />
