@@ -24,9 +24,11 @@ def create_diary_entry(db: Session, entry: schemas.DiaryEntryCreate, embedding: 
 
 
 def search_diary_entries(user_id: str, query_embedding: list, k: int):
+    print(user_id)
     response = supabase.rpc("search_diary_entries", {
         "query_embedding": query_embedding,
         "match_count": k,
         "user_id_param": user_id
     }).execute()
+    print(response.data)
     return response.data

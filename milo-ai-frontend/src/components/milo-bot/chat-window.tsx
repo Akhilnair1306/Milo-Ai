@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import { ChatInput } from "./chat-input"
 
+
 const BotFace3D = dynamic(() => import("./bot-face"), { ssr: false })
 
 type Message =
@@ -19,6 +20,7 @@ export default function ChatWindow() {
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorder = useRef<MediaRecorder | null>(null)
   const recordedChunks = useRef<Blob[]>([])
+const userId = JSON.parse(localStorage.getItem("userInfo") || "{}")?.id;
   async function transcribeAudio(blob: Blob) {
   const formData = new FormData();
   formData.append("file", blob, "recording.webm");
@@ -47,7 +49,7 @@ export default function ChatWindow() {
 
     ws.current.onopen = () => {
       console.log("WebSocket connected")
-      ws.current?.send(JSON.stringify({ type: "init", user_id: "123e4567-e89b-12d3-a456-426614174000" }))
+      ws.current?.send(JSON.stringify({ type: "init", user_id: userId }))
     }
 
     ws.current.onmessage = (event) => {

@@ -13,6 +13,7 @@ const DailyDiary = () => {
 
   // Replace with your API base URL
   const API_URL = "http://localhost:8000/api/v1/diary";
+  const userId = JSON.parse(localStorage.getItem("userInfo") || "{}")?.id;
 
 
   const handleSave = async () => {
@@ -30,7 +31,7 @@ const DailyDiary = () => {
         body: JSON.stringify({
           entry_text: entry,
           entry_type: "information", // You can make this dynamic
-          user_id: "123e4567-e89b-12d3-a456-426614174000", // Replace with logged-in user ID
+          user_id: userId, // Replace with logged-in user ID
         }),
       });
 

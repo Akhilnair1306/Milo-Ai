@@ -1,6 +1,7 @@
 from pydantic import BaseModel,EmailStr
 from typing import Optional
 from enum import Enum
+from uuid import UUID
 
 class RoleEnum(str, Enum):
     caregiver = "caregiver"
@@ -14,7 +15,7 @@ class UserCreate(UserBase):
     password: str
 
 class UserResponse(UserBase):
-    id: int
+    id: UUID
     role: RoleEnum
 
     class Config:
@@ -30,7 +31,7 @@ class CaregiverCreate(CaregiverBase):
     role: RoleEnum = RoleEnum.caregiver
 
 class CaregiverResponse(CaregiverBase):
-    id:int
+    id:UUID
     role: RoleEnum
     user: Optional[UserResponse]
 
@@ -41,6 +42,13 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+class UserInfo(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    user: UserInfo

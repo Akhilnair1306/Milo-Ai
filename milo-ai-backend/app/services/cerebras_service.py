@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from app.services.embedding_service import generate_embedding
 from app.services.diary_service import search_diary_entries
 from app.schemas.diary import DiaryEntryResponse
+
 load_dotenv()
 client = AsyncCerebras(api_key=os.getenv("CEREBRAS_API_KEY"))
 
@@ -59,21 +60,24 @@ Intent:"""
     chat_completion = await client.chat.completions.create(
         model="llama3.1-8b",
         messages=[
-            {"role": "system", "content": "You are a precise intent classification system. Respond only with the intent label."},
+            {
+                "role": "system",
+                "content": "You are a precise intent classification system. Respond only with the intent label.",
+            },
             {"role": "user", "content": classification_prompt},
         ],
         temperature=0.1,  # Low temperature for consistent classification
-        max_tokens=10     # Only need one word response
+        max_tokens=10,  # Only need one word response
     )
 
     intent = chat_completion.choices[0].message.content.strip().lower()
-    
+
     # Validation: ensure response is a valid intent
     valid_intents = {"store_memory", "reminder_query", "query", "smalltalk", "other"}
     if intent not in valid_intents:
         # Fallback logic if model returns unexpected format
         intent = "other"
-    
+
     return intent
 
 
@@ -82,14 +86,16 @@ async def get_context(user_id: str, query: str, db) -> str:
     Fetch relevant diary entries from Supabase to provide context for the bot.
     """
     # Use your embedding-based search
-    embedding =  generate_embedding(query)
-    results = search_diary_entries( user_id,embedding, k=5)
+    embedding = generate_embedding(query)
+    results = search_diary_entries(user_id, embedding, k=5)
     entries = [DiaryEntryResponse(**entry) for entry in results]
     context_lines = []
     for entry in entries:
         line = f"- [{entry.entry_type}] {entry.entry_text}"
         if entry.entry_type == "reminder":
-            line += f" (Reminder at {entry.reminder_time}, recurring: {entry.is_recurring})"
+            line += (
+                f" (Reminder at {entry.reminder_time}, recurring: {entry.is_recurring})"
+            )
         context_lines.append(line)
 
     return "\n".join(context_lines)
@@ -109,14 +115,19 @@ async def generate_response(user_id: str, user_input: str, db) -> str:
 
     # Step 3: Build the prompt for LLM
     prompt = f"""
-    You are an Alzheimer’s assistant bot.
-    Intent: {intent}
-    Context:
-    {context}
+You're a caring friend talking with someone who has memory challenges.
 
-    User: {user_input}
-    Bot:
-    """
+What they just said: {user_input}
+
+What's happening: {intent}
+
+Important information you know:
+{context}
+
+Be warm and natural, but ALWAYS be clear and specific - especially with dates, names, and facts. Don't be vague or create fake uncertainty. If you know something from the context, state it clearly and confidently. Your friend needs reliable information delivered in a friendly way.
+
+Your response:
+"""
 
     # Step 4: Generate response
     chat_completion = await client.chat.completions.create(
@@ -126,7 +137,7 @@ async def generate_response(user_id: str, user_input: str, db) -> str:
             {"role": "user", "content": prompt},
         ],
     )
-
+    print(chat_completion.choices[0].message.content)
     return chat_completion.choices[0].message.content.strip()
 
 

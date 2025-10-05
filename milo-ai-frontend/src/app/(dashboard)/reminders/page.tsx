@@ -26,7 +26,7 @@ const Reminders = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isRecurring, setIsRecurring] = useState(false);
 
-  const userId = "123e4567-e89b-12d3-a456-426614174000"; // Replace with actual user ID
+  const userId = JSON.parse(localStorage.getItem("userInfo") || "{}")?.id;// Replace with actual user ID
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -109,7 +109,7 @@ const Reminders = () => {
   const handleMarkCompleted = async (id: number) => {
     try {
       const res = await fetch(`http://localhost:8000/api/v1/reminders/${id}/complete`, {
-        method: "POST",
+        method: "PUT",
       });
       if (!res.ok) throw new Error("Failed to mark reminder complete");
 

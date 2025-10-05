@@ -34,7 +34,11 @@ def get_db():
     finally:
         db.close()
 
-def hash_password(password: str):
+def hash_password(password: str) -> str:
+    print(password)
+    # bcrypt only supports up to 72 bytes
+    if len(password.encode('utf-8')) > 72:
+        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     return pwd_context.hash(password)
 
 def verify_password(plain,hashed):
@@ -111,9 +115,18 @@ def login(request: User.LoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(request.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    token_data = {"sub": user.email, "role": user.role.value, "id": user.id}
+    token_data = {"sub": user.email, "role": user.role.value, "id": str(user.id)}
     token = auth_service.create_access_token(token_data)
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": str(user.id),
+            "name": user.name,
+            "email": user.email,
+            "role": user.role.value
+        }
+    }
 
 @router.post("/diary", response_model=schemas.DiaryEntryResponse)
 def add_entry(entry: schemas.DiaryEntryCreate, db: Session = Depends(get_db)):
@@ -210,7 +223,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 else:
 
                     embedding = embedding_service.generate_embedding(query_text)
-                    memories = diary_service.search_diary_entries("123e4567-e89b-12d3-a456-426614174000",embedding, 3)
+                    memories = diary_service.search_diary_entries(user_id,embedding, 3)
                     memory_context = "\n".join(m["entry_text"] for m in memories)
 
                     full_context = (
@@ -218,7 +231,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
 
                     bot_response = await cerebras_service.generate_response(
-                        "123e4567-e89b-12d3-a456-426614174000", query_text, db
+                        user_id, query_text, db
                     )
 
                     conversation_context.append(f"Bot: {bot_response}")
