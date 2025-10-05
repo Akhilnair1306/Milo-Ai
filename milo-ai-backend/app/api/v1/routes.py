@@ -18,6 +18,9 @@ import os
 from dotenv import load_dotenv
 import base64
 from passlib.context import CryptContext
+from datetime import datetime, time
+from app.models.diary import DiaryEntry,EntryType
+from typing import List
 load_dotenv()
 
 router = APIRouter()
@@ -124,7 +127,36 @@ def search_diary(query: str, user_id: str, db: Session = Depends(get_db)):
     results = diary_service.search_diary_entries(db, user_id, embedding, top_k=3)
     return {"results": results}
 
+@router.get("/reminders/{user_id}", response_model=List[schemas.DiaryEntryResponse])
+def get_reminders(user_id: str, db: Session = Depends(get_db)):
+    """
+    Fetch all reminders for a user starting from today and not completed yet.
+    """
+    now = datetime.now().time()
 
+    reminders = (
+        db.query(DiaryEntry)
+        .filter(
+            DiaryEntry.user_id == user_id,
+            DiaryEntry.entry_type == EntryType.REMINDER,
+            DiaryEntry.reminder_completed == False,
+            DiaryEntry.reminder_time >= now
+        )
+        .order_by(DiaryEntry.reminder_time.asc())
+        .all()
+    )
+    return reminders
+
+@router.put("/reminders/{reminder_id}/complete", response_model=schemas.DiaryEntryResponse)
+def mark_reminder_completed(reminder_id: int, db: Session = Depends(get_db)):
+    reminder = db.query(DiaryEntry).filter(DiaryEntry.id == reminder_id).first()
+    if not reminder:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+
+    reminder.reminder_completed = True
+    db.commit()
+    db.refresh(reminder)
+    return reminder
 @router.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()

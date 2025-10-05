@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Plus, Trash2, Clock } from "lucide-react";
+import { Bell, Plus, Trash2, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 
 type Reminder = {
@@ -16,6 +16,7 @@ type Reminder = {
   date: Date;
   reminder_time?: string;
   is_recurring?: boolean;
+  completed: boolean;
 };
 
 const Reminders = () => {
@@ -25,30 +26,28 @@ const Reminders = () => {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isRecurring, setIsRecurring] = useState(false);
 
-  const userId = "123e4567-e89b-12d3-a456-426614174000"; // Replace with actual logged-in user UUID
-
+  const userId = "123e4567-e89b-12d3-a456-426614174000"; // Replace with actual user ID
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   useEffect(() => {
-    // fetchReminders();
+    fetchReminders();
   }, []);
 
   const fetchReminders = async () => {
     try {
-      const res = await fetch(`/diary/${userId}`);
+      const res = await fetch(`http://localhost:8000/api/v1/reminders/${userId}`);
       if (!res.ok) throw new Error("Failed to fetch reminders");
       const data = await res.json();
       setReminders(
-        data
-          .filter((entry: any) => entry.entry_type === "reminder")
-          .map((entry: any) => ({
-            id: entry.id,
-            text: entry.entry_text,
-            date: new Date(entry.created_at),
-            reminder_time: entry.reminder_time,
-            is_recurring: entry.is_recurring,
-          }))
+        data.map((entry: any) => ({
+          id: entry.id,
+          text: entry.entry_text,
+          date: new Date(entry.created_at),
+          reminder_time: entry.reminder_time,
+          is_recurring: entry.is_recurring,
+          completed: entry.completed || false,
+        }))
       );
     } catch {
       toast.error("Error loading reminders");
@@ -90,7 +89,14 @@ const Reminders = () => {
       const data = await res.json();
       setReminders([
         ...reminders,
-        { id: data.id, text: reminderText, date: selectedDateTime, reminder_time: time, is_recurring: isRecurring },
+        {
+          id: data.id,
+          text: reminderText,
+          date: selectedDateTime,
+          reminder_time: time,
+          is_recurring: isRecurring,
+          completed: false,
+        },
       ]);
       setReminderText("");
       setIsRecurring(false);
@@ -100,10 +106,18 @@ const Reminders = () => {
     }
   };
 
-  const handleDeleteReminder = (id: number) => {
-    setReminders(reminders.filter((r) => r.id !== id));
-    toast.success("Reminder deleted!");
-    // TODO: Add backend delete call
+  const handleMarkCompleted = async (id: number) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/reminders/${id}/complete`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to mark reminder complete");
+
+      setReminders(reminders.map(r => r.id === id ? { ...r, completed: true } : r));
+      toast.success("Reminder marked as completed!");
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    }
   };
 
   return (
@@ -122,7 +136,6 @@ const Reminders = () => {
             <CardTitle className="text-xl">Add New Reminder</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Reminder Text */}
             <div>
               <Label>Reminder</Label>
               <Input
@@ -131,8 +144,6 @@ const Reminders = () => {
                 onChange={(e) => setReminderText(e.target.value)}
               />
             </div>
-
-            {/* Date Picker */}
             <div>
               <Label>Select Date</Label>
               <Calendar
@@ -148,20 +159,12 @@ const Reminders = () => {
                 className="rounded-lg border p-2"
               />
             </div>
-
-            {/* Time Picker */}
             <div>
               <Label className="flex items-center gap-1">
                 <Clock className="h-4 w-4" /> Select Time
               </Label>
-              <Input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
+              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
             </div>
-
-            {/* Recurring Toggle */}
             <div className="flex items-center gap-2">
               <Checkbox
                 id="recurring"
@@ -170,8 +173,6 @@ const Reminders = () => {
               />
               <Label htmlFor="recurring">Recurring daily</Label>
             </div>
-
-            {/* Add Button */}
             <Button onClick={handleAddReminder} className="w-full flex items-center gap-2">
               <Plus className="h-4 w-4" /> Add Reminder
             </Button>
@@ -190,12 +191,16 @@ const Reminders = () => {
               reminders.map((reminder, index) => (
                 <Card
                   key={reminder.id}
-                  className="p-4 border border-primary/20 hover:border-primary/40 transition-all group shadow-sm"
+                  className={`p-4 border ${
+                    reminder.completed ? "border-green-400 bg-green-50" : "border-primary/20"
+                  } hover:border-primary/40 transition-all group shadow-sm`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium">{reminder.text}</p>
+                      <p className={`font-medium ${reminder.completed ? "line-through text-muted-foreground" : ""}`}>
+                        {reminder.text}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {reminder.date.toLocaleDateString("en-US", {
                           weekday: "short",
@@ -207,14 +212,16 @@ const Reminders = () => {
                         {reminder.is_recurring && <> 🔁 Recurring</>}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteReminder(reminder.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {!reminder.completed && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMarkCompleted(reminder.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Check className="h-4 w-4 text-green-500" />
+                      </Button>
+                    )}
                   </div>
                 </Card>
               ))

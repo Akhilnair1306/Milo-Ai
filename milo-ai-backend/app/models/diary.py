@@ -23,5 +23,6 @@ class DiaryEntry(Base):
     entry_type = Column(Enum(EntryType), default=EntryType.INFORMATION, nullable=False)
     reminder_time = Column(Time, nullable=True)  # Time of day for reminder
     is_recurring = Column(Boolean, default=False)  # Daily recurring reminder
-
+    reminder_completed = Column(Boolean, default=False)  # New field
+    
     user = relationship("User", back_populates="diary_entries")
